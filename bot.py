@@ -1,5 +1,7 @@
 import telebot # библиотека telebot
 from config import token # импорт токена
+from telebot.types import ChatPermissions
+import time
 
 bot = telebot.TeleBot(token) 
 
@@ -39,5 +41,20 @@ def info(message):
 def make_some(message):
     bot.send_message(message.chat.id, 'I accepted a new user!')
     bot.approve_chat_join_request(message.chat.id, message.from_user.id)
+
+@bot.message_handler(commands=['mute'])
+def mute(message):
+    if message.reply_to_message:
+        chat_id = message.chat.id
+        user_id = message.reply_to_message.from_user.id
+
+        until_date = int(time.time()) + 3600
+
+        permissions = ChatPermissions(can_send_messages=False)
+
+        bot.restrict_chat_member(chat_id, user_id, permissions=permissions, until_date=until_date)
+        bot.reply_to(message, "Пользователь замьючен на 1 час.")
+    else:
+        bot.reply_to(message, "Эта команда работает только в ответ на сообщение.")
 
 bot.infinity_polling(none_stop=True)
